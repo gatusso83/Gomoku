@@ -1,3 +1,5 @@
+console.log("hi2")
+
 enum STATUS {
     AVAILABLE = 'AVAILABLE',
     OCCUPIEDP1 = 'OCCUPIEDP1',
@@ -42,9 +44,9 @@ class PositionMap { // See L10 8:30
     selectedSeats: number[] = []
     element: HTMLDivElement
 
-    constructor(rowNumber: number, positionNumberPerRow: number, occupiedPositions: number[] = []){
+    constructor(rowNumber: number, positionsPerRow: number){ // occupiedPositions: number[] = []){
         this.rows = Array.from({length: rowNumber}).map((_, index) => {
-            return new Row(index, positionNumberPerRow)
+            return new Row(index, positionsPerRow)
         })
         this.element = document.createElement('div')
         this.element.classList.add('position-map')
@@ -53,6 +55,6 @@ class PositionMap { // See L10 8:30
 }
 
 const positionMap = new PositionMap(5, 10);
-document.getElementById('gameboard')?.appendChild(positionMap.element)
+document.getElementById('game')?.appendChild(positionMap.element)
 
 
