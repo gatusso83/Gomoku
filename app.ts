@@ -1,9 +1,12 @@
+import { setConstantValue } from "typescript"
+
 console.log("hi2")
 
 enum STATUS {
     AVAILABLE = 'AVAILABLE',
     OCCUPIEDP1 = 'OCCUPIEDP1',
     OCCUPIEDP2 = 'OCCUPIEDP2',
+    OCCUPIED = 'OCCUPIED',
     SELECTED = 'SELECTED'
 }
 
@@ -19,7 +22,21 @@ class Position {
         this.element = document.createElement('div')
         this.element.classList.add('position')
         this.element.classList.add(this.status.toLowerCase())
+        this.element.addEventListener('click', () => {
+            this.handleClick()
+        })
     }   
+
+    handleClick() {
+        if (this.status === STATUS.OCCUPIED) return
+        this.element.classList.remove(this.status.toLowerCase())
+        this.status =STATUS.SELECTED
+        this.element.classList.add(this.status.toLowerCase())
+    }
+
+    get isSelected() {
+        return this.status === STATUS.SELECTED
+    }
 }
 
 class Row {
@@ -37,11 +54,15 @@ class Row {
         this.element.classList.add('row')
         this.element.append(...this.positions.map((position) => position.element))
     }
+
+    get selectedPositionsId() {
+        return this.positions.filter((position) => position.isSelected).map((position) => position.id ) 
+    }
 }
 
 class PositionMap { // See L10 8:30
     rows: Row[]
-    selectedSeats: number[] = []
+    selectedPositions: number[] = []
     element: HTMLDivElement
 
     constructor(rowNumber: number, positionsPerRow: number){ // occupiedPositions: number[] = []){
@@ -51,10 +72,20 @@ class PositionMap { // See L10 8:30
         this.element = document.createElement('div')
         this.element.classList.add('position-map')
         this.element.append(...this.rows.map((row) => row.element))
+        this.element.addEventListener('click', () => this.getSelectedPositionsId())
+    }
+
+    getSelectedPositionsId() {
+        this.selectedPositions = this.rows.reduce<number[]>((total, row) => {
+            total = [...total, ...row.selectedPositionsId]
+            return total
+        },[])
+        console.log('hello im here')
+        console.log(`Selected seats: ${this.selectedPositions.join(',')}`)
     }
 }
 
-const positionMap = new PositionMap(5, 10);
+const positionMap = new PositionMap(15, 15);
 document.getElementById('game')?.appendChild(positionMap.element)
 
 
