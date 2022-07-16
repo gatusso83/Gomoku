@@ -10,6 +10,16 @@ enum STATUS {
     SELECTED = 'SELECTED'
 }
 
+class State {
+    p1: boolean = true
+
+    constructor(){
+        this.p1 = true
+    }
+
+
+}
+
 class Position {
     id: number
     status: STATUS
@@ -28,10 +38,22 @@ class Position {
     }   
 
     handleClick() {
-        if (this.status === STATUS.OCCUPIED) return
+        if (this.status === STATUS.OCCUPIED || this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
         this.element.classList.remove(this.status.toLowerCase())
-        this.status =STATUS.SELECTED
+        
+        //Switch states so position 
+        if (state.p1 === true) {
+            state.p1 = false
+            this.status = STATUS.OCCUPIEDP1}
+        else {
+            state.p1 = true
+            this.status = STATUS.OCCUPIEDP2}
+
+        console.log(`P1 state ${state.p1}`)  
+        
+        //this.status =STATUS.SELECTED
         this.element.classList.add(this.status.toLowerCase())
+
     }
 
     handleReset() {
@@ -86,6 +108,20 @@ class PositionMap { // See L10 8:30
     }
 }
 
+class ResetButton {
+    element: HTMLButtonElement
+    text: string = "Reset Game"
+
+    constructor(){
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonReset')
+        this.element.innerHTML = this.text
+        this.element.addEventListener('click', () => {
+            location.reload()
+        })        
+    }
+}
+
 // class Message {
 //     element: HTMLDivElement
 
@@ -102,33 +138,7 @@ class PositionMap { // See L10 8:30
 const positionMap = new PositionMap(15, 15);
 document.getElementById('game')?.appendChild(positionMap.element)
 
-
-class ResetButton {
-    element: HTMLButtonElement
-    text: string = "Reset"
-
-    constructor(){
-        this.element = document.createElement('button')
-        this.element.classList.add('buttonReset')
-        this.element.innerHTML = "Reset"
-        this.element.addEventListener('click', () => {
-            this.handleClick()
-        })
-    }
-
-    handleClick() {location.reload()
-
-        // console.log("Reset clicked")
-        // console.log(positionMap.selectedPositions)
-        // document.getElementById('position')?.classList.remove('available')      
-            
-    }
-        //positionMap.selectedPositions = []  // Positions are still selected
-        //console.log(positionMap.selectedPositions)
-}
-
-
 const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)
 
-
+const state = new State
