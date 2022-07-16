@@ -6,7 +6,6 @@ enum STATUS {
     AVAILABLE = 'AVAILABLE',
     OCCUPIEDP1 = 'OCCUPIEDP1',
     OCCUPIEDP2 = 'OCCUPIEDP2',
-    OCCUPIED = 'OCCUPIED',
     SELECTED = 'SELECTED'
 }
 
@@ -38,18 +37,21 @@ class Position {
     }   
 
     handleClick() {
-        if (this.status === STATUS.OCCUPIED || this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
+        if (this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
         this.element.classList.remove(this.status.toLowerCase())
         
-        //Switch states so position 
+        //Switch states so when an available space is click the correct color stone is placed
         if (state.p1 === true) {
             state.p1 = false
-            this.status = STATUS.OCCUPIEDP1}
+            this.status = STATUS.OCCUPIEDP1
+            message.element.innerHTML = "Player 2's turn"}
         else {
             state.p1 = true
-            this.status = STATUS.OCCUPIEDP2}
+            this.status = STATUS.OCCUPIEDP2
+            message.element.innerHTML = "Player 1's turn"}
 
         console.log(`P1 state ${state.p1}`)  
+        console.log(`Message ${message.text}`)
         
         //this.status =STATUS.SELECTED
         this.element.classList.add(this.status.toLowerCase())
@@ -122,21 +124,25 @@ class ResetButton {
     }
 }
 
-// class Message {
-//     element: HTMLDivElement
+class Message {
+    element: HTMLParagraphElement
+    text: string = "Player 1's turn"
 
-//     constructor(){
-//         this.element = document.createElement('div')
-//         this.element.classList.add('ui')
-//         this.element
-//     }
+    constructor(){
+        this.element = document.createElement('p')
+        this.element.classList.add('message')
+        this.element.innerHTML = this.text
+    }
 
-// }
+}
 
 
 
 const positionMap = new PositionMap(15, 15);
 document.getElementById('game')?.appendChild(positionMap.element)
+
+const message = new Message
+document.getElementById('game')?.appendChild(message.element)
 
 const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)

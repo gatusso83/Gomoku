@@ -79,13 +79,18 @@ body {
   
   }
 
-  .ui{
-    background-color: green;
+  .message{
+    display: flex;
+    color: black;
+    font-size: 24;
+    align-items: center;
+    justify-content: center;
+
 
   }
   .buttonReset{
-    padding: 25px;
     display: flex;
+    padding: 25px;
     justify-content: center;
     box-sizing: border-box;
     align-items: center;
