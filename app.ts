@@ -1,4 +1,4 @@
-import { setConstantValue } from "typescript"
+import { forEachChild, setConstantValue } from "typescript"
 
 console.log("hi2")
 
@@ -34,6 +34,11 @@ class Position {
         this.element.classList.add(this.status.toLowerCase())
     }
 
+    handleReset() {
+        this.status = STATUS.AVAILABLE
+        this.element.classList.add(this.status.toLowerCase())
+    }
+
     get isSelected() {
         return this.status === STATUS.SELECTED
     }
@@ -65,7 +70,7 @@ class PositionMap { // See L10 8:30
     selectedPositions: number[] = []
     element: HTMLDivElement
 
-    constructor(rowNumber: number, positionsPerRow: number){ // occupiedPositions: number[] = []){
+    constructor(rowNumber: number, positionsPerRow: number){ 
         this.rows = Array.from({length: rowNumber}).map((_, index) => {
             return new Row(index, positionsPerRow)
         })
@@ -76,16 +81,54 @@ class PositionMap { // See L10 8:30
     }
 
     getSelectedPositionsId() {
-        this.selectedPositions = this.rows.reduce<number[]>((total, row) => {
-            total = [...total, ...row.selectedPositionsId]
-            return total
-        },[])
-        console.log('hello im here')
-        console.log(`Selected seats: ${this.selectedPositions.join(',')}`)
+        this.selectedPositions = this.rows.map(row => row.selectedPositionsId).flat()
+        console.log(`Selected positions: ${this.selectedPositions.join(',')}`)
     }
 }
 
+// class Message {
+//     element: HTMLDivElement
+
+//     constructor(){
+//         this.element = document.createElement('div')
+//         this.element.classList.add('ui')
+//         this.element
+//     }
+
+// }
+
+
+
 const positionMap = new PositionMap(15, 15);
 document.getElementById('game')?.appendChild(positionMap.element)
+
+
+class ResetButton {
+    element: HTMLButtonElement
+    text: string = "Reset"
+
+    constructor(){
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonReset')
+        this.element.innerHTML = "Reset"
+        this.element.addEventListener('click', () => {
+            this.handleClick()
+        })
+    }
+
+    handleClick() {location.reload()
+
+        // console.log("Reset clicked")
+        // console.log(positionMap.selectedPositions)
+        // document.getElementById('position')?.classList.remove('available')      
+            
+    }
+        //positionMap.selectedPositions = []  // Positions are still selected
+        //console.log(positionMap.selectedPositions)
+}
+
+
+const button = new ResetButton
+document.getElementById('game')?.appendChild(button.element)
 
 
