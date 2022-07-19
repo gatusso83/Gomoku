@@ -1,6 +1,6 @@
 import { forEachChild, getCombinedNodeFlags, setConstantValue } from "typescript"
 
-console.log("hi2")
+//console.log("hi2")
 
 
 enum STATUS {
@@ -19,6 +19,10 @@ class State {
         this.p1Turn = true
         this.win = false
         this.draw = false
+    }
+
+    winState() {
+
     }
 
 
@@ -48,12 +52,14 @@ class Position {
 
         //Switch states so when an available space is clicked the correct color stone is placed
         if (state.p1Turn === true) {
+            checkForWin.wincheck(positionMap.p1SelectedPositions)
             state.p1Turn = false
             this.status = STATUS.OCCUPIEDP1
             message.element.innerText = "Player 2's turn"
         }
         else {
             state.p1Turn = true
+            checkForWin.wincheck(positionMap.p1SelectedPositions)
             this.status = STATUS.OCCUPIEDP2
             message.element.innerText = "Player 1's turn"
         }
@@ -112,14 +118,14 @@ class PositionMap {
     getSelectedPositionsId() {
         if (state.p1Turn === true) {
             this.p1SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
+            //console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
             console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
 
         }
         else {
             this.p2SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
             console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
+            // console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
 
         }
     }
@@ -157,11 +163,20 @@ class CheckForWin {
     p1List: number[]
     p2List: number[]
 
-    constructor(p1List: number[], p2List: number[]) {
-        this.p1List = p1List
-        this.p2List = p2List
-
+    constructor() {
     }
+
+    wincheck(list: number[]): boolean { //Can just run this function in the on click in the position and run against each list
+        if (list.length >= 2) {
+            state.win = true
+            positionMap.element.classList.remove('position')
+            console.log("Winner Winner chicken dinner")
+            return true
+        }
+        return false
+    }
+
+
 }
 
 
@@ -178,6 +193,7 @@ const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)
 
 const state = new State
+const checkForWin = new CheckForWin
 
-console.log(`P1 state ${state.p1Turn}`)
+//console.log(`P1 state ${state.p1Turn}`)
 

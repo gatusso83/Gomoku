@@ -58,6 +58,10 @@ body {
   border-radius: 1rem;
 }
 
+.position.winState {
+  cursor: not-allowed
+}
+
 .position.occupiedp1 {
   background-color: rgb(240, 15, 15);
   cursor: not-allowed;
@@ -106,6 +110,8 @@ body {
   width: 175px;
   height: 50px;
 }
+
+
 
 .buttonReset:hover {
   background-color: rgb(231, 125, 89);
