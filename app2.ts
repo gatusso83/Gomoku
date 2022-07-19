@@ -1,7 +1,6 @@
-import { forEachChild, getCombinedNodeFlags, setConstantValue } from "typescript"
+import { forEachChild, setConstantValue } from "typescript"
 
 console.log("hi2")
-
 
 enum STATUS {
     AVAILABLE = 'AVAILABLE',
@@ -11,14 +10,10 @@ enum STATUS {
 }
 
 class State {
-    p1Turn: boolean = true
-    win: boolean = false
-    draw: boolean = false
+    p1: boolean = true
 
     constructor() {
-        this.p1Turn = true
-        this.win = false
-        this.draw = false
+        this.p1 = true
     }
 
 
@@ -45,30 +40,33 @@ class Position {
         if (this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
         this.element.classList.remove(this.status.toLowerCase())
 
-
-        //Switch states so when an available space is clicked the correct color stone is placed
-        if (state.p1Turn === true) {
-            state.p1Turn = false
+        //Switch states so when an available space is click the correct color stone is placed
+        if (state.p1 === true) {
+            state.p1 = false
             this.status = STATUS.OCCUPIEDP1
-            message.element.innerText = "Player 2's turn"
+            message.element.innerHTML = "Player 2's turn"
         }
         else {
-            state.p1Turn = true
+            state.p1 = true
             this.status = STATUS.OCCUPIEDP2
-            message.element.innerText = "Player 1's turn"
+            message.element.innerHTML = "Player 1's turn"
         }
 
-        console.log(`P1 state ${state.p1Turn}`)
-        console.log(`Message ${message.element.innerHTML}`)
+        console.log(`P1 state ${state.p1}`)
+        console.log(`Message ${message.text}`)
 
+        //this.status =STATUS.SELECTED
+        this.element.classList.add(this.status.toLowerCase())
+
+    }
+
+    handleReset() {
+        this.status = STATUS.AVAILABLE
         this.element.classList.add(this.status.toLowerCase())
     }
 
     get isSelected() {
-        if (state.p1Turn === true)
-            return this.status === STATUS.OCCUPIEDP1
-        else
-            return this.status === STATUS.OCCUPIEDP2
+        return this.status === STATUS.OCCUPIEDP1//STATUS.SELECTED
     }
 }
 
@@ -93,10 +91,9 @@ class Row {
     }
 }
 
-class PositionMap {
+class PositionMap { // See L10 8:30
     rows: Row[]
-    p1SelectedPositions: number[] = []
-    p2SelectedPositions: number[] = []
+    selectedPositions: number[] = []
     element: HTMLDivElement
 
     constructor(rowNumber: number, positionsPerRow: number) {
@@ -110,22 +107,28 @@ class PositionMap {
     }
 
     getSelectedPositionsId() {
-        if (state.p1Turn === true) {
-            this.p1SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
-
-        }
-        else {
-            this.p2SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
-
-        }
+        this.selectedPositions = this.rows.reduce<number[]>((total, row) => {
+            total = [...total, ...row.selectedPositionsId]
+            return total
+        }, [])
+        //this.selectedPositions = this.rows.map(row => row.selectedPositionsId).flat()
+        console.log(`Selected positions: ${this.selectedPositions.join(',')}`)
     }
 }
 
+class ResetButton {
+    element: HTMLButtonElement
+    text: string = "Reset Game"
 
+    constructor() {
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonReset')
+        this.element.innerHTML = this.text
+        this.element.addEventListener('click', () => {
+            location.reload()
+        })
+    }
+}
 
 class Message {
     element: HTMLParagraphElement
@@ -134,37 +137,10 @@ class Message {
     constructor() {
         this.element = document.createElement('p')
         this.element.classList.add('message')
-        this.element.setAttribute('id', 'message')
         this.element.innerHTML = this.text
     }
+
 }
-
-class ResetButton {
-    element: HTMLButtonElement
-    btnText: string = "Reset Game"
-
-    constructor() {
-        this.element = document.createElement('button')
-        this.element.classList.add('buttonReset')
-        this.element.innerText = this.btnText
-        this.element.addEventListener('click', () => {
-            location.reload()
-        })
-    }
-}
-
-class CheckForWin {
-    p1List: number[]
-    p2List: number[]
-
-    constructor(p1List: number[], p2List: number[]) {
-        this.p1List = p1List
-        this.p2List = p2List
-
-    }
-}
-
-
 
 
 
@@ -178,6 +154,3 @@ const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)
 
 const state = new State
-
-console.log(`P1 state ${state.p1Turn}`)
-
