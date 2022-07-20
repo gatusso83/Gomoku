@@ -49,25 +49,25 @@ class Position {
         if (this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
         this.element.classList.remove(this.status.toLowerCase())
 
-
         //Switch states so when an available space is clicked the correct color stone is placed
-        if (state.p1Turn === true) {
-            checkForWin.wincheck(positionMap.p1SelectedPositions, this.id)
-            state.p1Turn = false
+        if (state.p1Turn === true && state.win == false) {
             this.status = STATUS.OCCUPIEDP1
+            state.p1Turn = false
+            this.element.classList.add(this.status.toLowerCase())
             message.element.innerText = "Player 2's turn"
+            checkForWin.wincheck(positionMap.p1SelectedPositions, this.id)
+        }
+
+        else if (state.p1Turn === false && state.win == false) {
+            state.p1Turn = true
+            this.status = STATUS.OCCUPIEDP2
+            this.element.classList.add(this.status.toLowerCase())
+            message.element.innerText = "Player 1's turn"
+            checkForWin.wincheck(positionMap.p2SelectedPositions, this.id)
         }
         else {
-            state.p1Turn = true
-            checkForWin.wincheck(positionMap.p2SelectedPositions, this.id)
-            this.status = STATUS.OCCUPIEDP2
-            message.element.innerText = "Player 1's turn"
+            return
         }
-
-        console.log(`P1 state ${state.p1Turn}`)
-        console.log(`Message ${message.element.innerHTML}`)
-
-        this.element.classList.add(this.status.toLowerCase())
     }
 
     get isSelected() {
@@ -179,19 +179,8 @@ class CheckForWin {
         //Diagonal descending \
         let counter: number = 1
         let increment: number = this.columns + 1
-        //let i: number = 1
 
-        // while (i < 5) {
-        //     if (list.includes(tokenPosition + increment)) {
-        //         counter += 1
-        //         tokenPosition += increment
 
-        //         console.log(`Counter: ${counter}, Token Position: ${tokenPosition}`)
-        //     }
-        //     i++
-        // }
-
-        //Diagonal descending \
         list.forEach(element => {
             if (list.includes(element + increment))
                 counter += 1
@@ -201,19 +190,17 @@ class CheckForWin {
 
         if (counter == 4) {
             state.win = true
+            console.log(`state win? ${state.win}`)
 
+            if (state.p1Turn == false) {
+                message.element.innerText = "Player 1 Wins!!!!!!!"
+                console.log("P1 Wins!!!!!")
+            }
+            else
+                message.element.innerText = "Player 2 Wins!!!!!!!"
+            console.log("P2222 Wins!!!!!")
         }
-        console.log("We won baby!!!!!")
 
-
-        //Can just run this function in the on click in the position and run against each list
-        if (list.length >= 2) {
-            state.win = true
-            positionMap.element.classList.remove('position')
-            console.log("Winner Winner chicken dinner")
-            return true
-        }
-        return false
     }
 
 
