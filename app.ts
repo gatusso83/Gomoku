@@ -22,10 +22,7 @@ class State {
     }
 
     winState() {
-
     }
-
-
 }
 
 class Position {
@@ -33,10 +30,9 @@ class Position {
     status: STATUS
     element: HTMLDivElement
 
-    constructor(id: number, isOccupiedP1: boolean = false, isOccupiedP2: boolean = false) {
+    constructor(id: number) {
         this.id = id
-        this.status = isOccupiedP1 ? STATUS.OCCUPIEDP1 : STATUS.AVAILABLE // need to add OCCUPIEDP2
-        // Need to check status somehow.
+        this.status = STATUS.AVAILABLE
         this.element = document.createElement('div')
         this.element.classList.add('position')
         this.element.classList.add(this.status.toLowerCase())
@@ -50,20 +46,18 @@ class Position {
         this.element.classList.remove(this.status.toLowerCase())
 
         //Switch states so when an available space is clicked the correct color stone is placed
-        if (state.p1Turn === true && state.win == false) {
+        if (state.p1Turn === true && state.win === false) {
             this.status = STATUS.OCCUPIEDP1
-            state.p1Turn = false
             this.element.classList.add(this.status.toLowerCase())
             message.element.innerText = "Player 2's turn"
-            checkForWin.wincheck(positionMap.p1SelectedPositions, this.id)
+            state.p1Turn = false
         }
 
         else if (state.p1Turn === false && state.win == false) {
-            state.p1Turn = true
             this.status = STATUS.OCCUPIEDP2
             this.element.classList.add(this.status.toLowerCase())
             message.element.innerText = "Player 1's turn"
-            checkForWin.wincheck(positionMap.p2SelectedPositions, this.id)
+            state.p1Turn = true
         }
         else {
             return
@@ -71,10 +65,12 @@ class Position {
     }
 
     get isSelected() {
-        if (state.p1Turn === true)
+        if (state.p1Turn === false) {
             return this.status === STATUS.OCCUPIEDP1
-        else
+        }
+        else {
             return this.status === STATUS.OCCUPIEDP2
+        }
     }
 }
 
@@ -118,17 +114,16 @@ class PositionMap {
     }
 
     getSelectedPositionsId() {
-        if (state.p1Turn === true) {
+        if (state.p1Turn === false) {
             this.p1SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
             //console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
+            // console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
 
         }
         else {
             this.p2SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            // console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
-
+            // console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
+            console.log(`P2 Selected positions: ${this.p2SelectedPositions}`)
         }
     }
 }
@@ -169,9 +164,25 @@ class CheckForWin {
 
 
     constructor() {
+        addEventListener('click', () => this.checkWin())
+
     }
 
-    wincheck(list: number[], tokenPosition: number) {
+    checkWin() {
+        this.p1List = positionMap.p1SelectedPositions
+        this.p2List = positionMap.p2SelectedPositions
+        console.log(this.p1List)
+        console.log(this.p2List)
+        console.log(`P1 Selected positions: ${positionMap.p1SelectedPositions.join(',')}`)
+        if (state.p1Turn == false)
+            this.checkForFive(this.p1List)
+        else
+            this.checkForFive(this.p2List)
+    }
+
+
+    ///// THIS IS WORKING FOR P1, NEED TO HAVE THE FUCNTION CHECK 
+    checkForFive(list: number[]) {
 
         console.log(`Rows: ${this.rows}`)
         console.log(`Columns: ${this.columns}`)
@@ -181,7 +192,7 @@ class CheckForWin {
         let verticalIncrement: number = this.columns
         let horizontalIncrement: number = 1
 
-
+        console.log(`Checking in winCheckP1 Selected positions: ${positionMap.p1SelectedPositions.join(',')}`)
         list.forEach(element => {
 
             //Descending diagonal \ code
@@ -204,7 +215,9 @@ class CheckForWin {
 
             //Horizontal - code
             if (list.includes(element + horizontalIncrement) && list.includes(element + 2 * horizontalIncrement) && +
-                list.includes(element + 3 * horizontalIncrement) && list.includes(element + 4 * horizontalIncrement)) {
+                list.includes(element + 3 * horizontalIncrement) && list.includes(element + 4 * horizontalIncrement) && +
+                ((element + 4 * horizontalIncrement) % this.columns != 0) && ((element + 3 * horizontalIncrement) % this.columns != 0) && +
+                ((element + 2 * horizontalIncrement) % this.columns != 0) && ((element + 1 * horizontalIncrement) % this.columns != 0)) {
                 state.win = true
             }
 
@@ -218,15 +231,56 @@ class CheckForWin {
 
 }
 
+class GameSizeUI {
+    element: HTMLDivElement
+    button: HTMLButtonElement
+
+    constructor() {
+        this.element = document.createElement('div')
+        this.element.classList.add('ui')
 
 
 
+        //this.button = document.createElement('button')
+        //this.element.classList.add('sizeButton')
 
 
+
+        //this.element.classList.add('buttonReset')
+
+    }
+}
+
+class SizeButton {
+    element: HTMLButtonElement
+    element2: HTMLDivElement
+    btnText: string = "Change size of board"
+    options: number[]
+
+    constructor() {
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonSize')
+        this.element.innerText = this.btnText
+        this.element.setAttribute('id', 'buttonSize')
+        this.element.addEventListener('click', () => {
+            this.handleClick()
+        })
+        this.element2 = document.createElement('div')
+        this.element2.classList.add('dropdown')
+    }
+
+    handleClick() {
+        this.element2.classList.toggle('show')
+
+
+    }
+}
 
 
 const positionMap = new PositionMap(10, 10);
 document.getElementById('game')?.appendChild(positionMap.element)
+
+const checkForWin = new CheckForWin
 
 const message = new Message
 document.getElementById('game')?.appendChild(message.element)
@@ -234,8 +288,15 @@ document.getElementById('game')?.appendChild(message.element)
 const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)
 
+const uiButton = new SizeButton
+document.getElementById('game')?.appendChild(uiButton.element)
+document.getElementById('buttonSize')?.appendChild(uiButton.element2)
+//document.getElementById('ui')?.appendChild(button.element)
+
 const state = new State
-const checkForWin = new CheckForWin
+
+
+
 
 //console.log(`P1 state ${state.p1Turn}`)
 
