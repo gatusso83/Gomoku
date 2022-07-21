@@ -171,40 +171,55 @@ class CheckForWin {
     constructor() {
     }
 
-    wincheck(list: number[], tokenPosition: number): boolean {
+    wincheck(list: number[], tokenPosition: number) {
 
         console.log(`Rows: ${this.rows}`)
         console.log(`Columns: ${this.columns}`)
 
-        //Diagonal descending \
-        let counter: number = 1
-        let increment: number = this.columns + 1
+        let desDiagIncrement: number = this.columns + 1
+        let ascDiagIncrement: number = this.columns - 1
+        let verticalIncrement: number = this.columns
+        let horizontalIncrement: number = 1
 
 
         list.forEach(element => {
-            if (list.includes(element + increment))
-                counter += 1
-            console.log(`Counter2: ${counter}, Token Position2: ${tokenPosition}`)
+
+            //Descending diagonal \ code
+            if (list.includes(element + desDiagIncrement) && list.includes(element + 2 * desDiagIncrement) && +
+                list.includes(element + 3 * desDiagIncrement) && list.includes(element + 4 * desDiagIncrement)) {
+                state.win = true
+            }
+
+            //Ascending diagonal / code
+            if (list.includes(element - ascDiagIncrement) && list.includes(element - 2 * ascDiagIncrement) && +
+                list.includes(element - 3 * ascDiagIncrement) && list.includes(element - 4 * ascDiagIncrement)) {
+                state.win = true
+            }
+
+            //Vertical | code
+            if (list.includes(element + verticalIncrement) && list.includes(element + 2 * verticalIncrement) && +
+                list.includes(element + 3 * verticalIncrement) && list.includes(element + 4 * verticalIncrement)) {
+                state.win = true
+            }
+
+            //Horizontal - code
+            if (list.includes(element + horizontalIncrement) && list.includes(element + 2 * horizontalIncrement) && +
+                list.includes(element + 3 * horizontalIncrement) && list.includes(element + 4 * horizontalIncrement)) {
+                state.win = true
+            }
 
         })
 
-        if (counter == 4) {
-            state.win = true
-            console.log(`state win? ${state.win}`)
-
-            if (state.p1Turn == false) {
-                message.element.innerText = "Player 1 Wins!!!!!!!"
-                console.log("P1 Wins!!!!!")
-            }
-            else
-                message.element.innerText = "Player 2 Wins!!!!!!!"
-            console.log("P2222 Wins!!!!!")
-        }
-
+        if (state.p1Turn == false && state.win == true)
+            message.element.innerText = "Player 1 Wins!!!!!!!"
+        else if (state.p1Turn == true && state.win == true)
+            message.element.innerText = "Player 2 Wins!!!!!!!"
     }
 
-
 }
+
+
+
 
 
 
