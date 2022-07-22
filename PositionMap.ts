@@ -30,5 +30,5 @@ export default class PositionMap {
     }
 }
 
-export const positionMap = new PositionMap(10, 10);
+export const positionMap = new PositionMap(15, 15);
 document.getElementById('game')?.appendChild(positionMap.element)

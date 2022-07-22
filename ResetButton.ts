@@ -1,4 +1,4 @@
-export default class ResetButton {
+class ResetButton {
     element: HTMLButtonElement
     btnText: string = "Reset Game"
 

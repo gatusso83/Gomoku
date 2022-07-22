@@ -28,25 +28,29 @@ body {
 
 .gameboard {
   width: auto;
+  background-color: rgb(184, 163, 124);
   max-width: 1000px;
   flex-direction: column;
   margin: 100px auto;
   display: flex;
-  background-color: rgb(165, 121, 38);
 }
 
 .position-map {
+
   margin-top: 25px;
+  margin-left: 5%;
+  margin-right: 5%;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   row-gap: .5rem;
   display: flex;
+  background-color: rgb(241, 204, 134);
 }
 
 .row {
-  column-gap: .2rem;
   display: flex;
+  column-gap: .2rem;
 }
 
 .position {
@@ -63,23 +67,14 @@ body {
 }
 
 .position.occupiedp1 {
-  background-color: rgb(240, 15, 15);
+  background-color: black;
   cursor: not-allowed;
 }
 
 .position.occupiedp2 {
-  background-color: black;
+  background-color: white;
   cursor: not-allowed;
-
 }
-
-.position.selected {
-  background-color: rgb(240, 15, 15);
-  cursor: not-allowed;
-
-}
-
-.position.available {}
 
 .message {
   display: flex;
@@ -88,8 +83,6 @@ body {
   font-size: 24;
   align-items: center;
   justify-content: center;
-
-
 }
 
 .buttonReset {
@@ -113,6 +106,7 @@ body {
 
 .buttonSize {
   margin-top: 25px;
+  margin-bottom: 25px;
   position: relative;
   display: flex;
   margin-left: auto;
@@ -134,8 +128,6 @@ body {
   align-items: center;
   height: 125px;
 }
-
-
 
 .buttonReset:hover {
   background-color: rgb(231, 125, 89);
