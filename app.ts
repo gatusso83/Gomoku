@@ -1,8 +1,5 @@
 import { forEachChild, getCombinedNodeFlags, setConstantValue } from "typescript"
 
-//console.log("hi2")
-
-
 enum STATUS {
     AVAILABLE = 'AVAILABLE',
     OCCUPIEDP1 = 'OCCUPIEDP1',
@@ -19,9 +16,6 @@ class State {
         this.p1Turn = true
         this.win = false
         this.draw = false
-    }
-
-    winState() {
     }
 }
 
@@ -114,21 +108,12 @@ class PositionMap {
     }
 
     getSelectedPositionsId() {
-        if (state.p1Turn === false) {
+        if (state.p1Turn === false)
             this.p1SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            //console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            // console.log(`P1 Selected positions: ${this.p1SelectedPositions.join(',')}`)
-
-        }
-        else {
+        else
             this.p2SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
-            // console.log(`P2 Selected positions: ${this.p2SelectedPositions.join(',')}`)
-            console.log(`P2 Selected positions: ${this.p2SelectedPositions}`)
-        }
     }
 }
-
-
 
 class Message {
     element: HTMLParagraphElement
@@ -162,48 +147,46 @@ class CheckForWin {
     columns: number = positionMap.columns
     rows: number = positionMap.rows.length
 
-
     constructor() {
-        addEventListener('click', () => this.checkWin())
-
+        addEventListener('click', () => this.checkWinDraw())
     }
 
-    checkWin() {
+    checkWinDraw() {
         this.p1List = positionMap.p1SelectedPositions
         this.p2List = positionMap.p2SelectedPositions
-        console.log(this.p1List)
-        console.log(this.p2List)
-        console.log(`P1 Selected positions: ${positionMap.p1SelectedPositions.join(',')}`)
+
         if (state.p1Turn == false)
             this.checkForFive(this.p1List)
         else
             this.checkForFive(this.p2List)
+
+        if (state.win == false && ((this.p1List.length + this.p2List.length) == (this.rows * this.columns))) {
+            state.draw = true
+            message.element.innerText = "Game is a draw, click reset game"
+        }
     }
 
-
-    ///// THIS IS WORKING FOR P1, NEED TO HAVE THE FUCNTION CHECK 
     checkForFive(list: number[]) {
-
-        console.log(`Rows: ${this.rows}`)
-        console.log(`Columns: ${this.columns}`)
-
         let desDiagIncrement: number = this.columns + 1
         let ascDiagIncrement: number = this.columns - 1
         let verticalIncrement: number = this.columns
         let horizontalIncrement: number = 1
 
-        console.log(`Checking in winCheckP1 Selected positions: ${positionMap.p1SelectedPositions.join(',')}`)
         list.forEach(element => {
 
             //Descending diagonal \ code
             if (list.includes(element + desDiagIncrement) && list.includes(element + 2 * desDiagIncrement) && +
-                list.includes(element + 3 * desDiagIncrement) && list.includes(element + 4 * desDiagIncrement)) {
+                list.includes(element + 3 * desDiagIncrement) && list.includes(element + 4 * desDiagIncrement) && +
+                ((element + 4 * desDiagIncrement) % this.columns != 0) && ((element + 3 * desDiagIncrement) % this.columns != 0) && +
+                ((element + 2 * desDiagIncrement) % this.columns != 0) && ((element + 1 * desDiagIncrement) % this.columns != 0)) {
                 state.win = true
             }
 
             //Ascending diagonal / code
             if (list.includes(element - ascDiagIncrement) && list.includes(element - 2 * ascDiagIncrement) && +
-                list.includes(element - 3 * ascDiagIncrement) && list.includes(element - 4 * ascDiagIncrement)) {
+                list.includes(element - 3 * ascDiagIncrement) && list.includes(element - 4 * ascDiagIncrement) && +
+                ((element - 4 * ascDiagIncrement) % this.columns != 0) && ((element - 3 * ascDiagIncrement) % this.columns != 0) && +
+                ((element - 2 * ascDiagIncrement) % this.columns != 0) && ((element - 1 * ascDiagIncrement) % this.columns != 0)) {
                 state.win = true
             }
 
@@ -220,7 +203,6 @@ class CheckForWin {
                 ((element + 2 * horizontalIncrement) % this.columns != 0) && ((element + 1 * horizontalIncrement) % this.columns != 0)) {
                 state.win = true
             }
-
         })
 
         if (state.p1Turn == false && state.win == true)
@@ -277,7 +259,7 @@ class SizeButton {
 }
 
 
-const positionMap = new PositionMap(10, 10);
+const positionMap = new PositionMap(5, 5);
 document.getElementById('game')?.appendChild(positionMap.element)
 
 const checkForWin = new CheckForWin
