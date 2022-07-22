@@ -1,6 +1,4 @@
-import { forEachChild, setConstantValue } from "typescript"
-
-console.log("hi2")
+import { forEachChild, getCombinedNodeFlags, setConstantValue } from "typescript"
 
 enum STATUS {
     AVAILABLE = 'AVAILABLE',
@@ -10,13 +8,15 @@ enum STATUS {
 }
 
 class State {
-    p1: boolean = true
+    p1Turn: boolean = true
+    win: boolean = false
+    draw: boolean = false
 
     constructor() {
-        this.p1 = true
+        this.p1Turn = true
+        this.win = false
+        this.draw = false
     }
-
-
 }
 
 class Position {
@@ -24,10 +24,9 @@ class Position {
     status: STATUS
     element: HTMLDivElement
 
-    constructor(id: number, isOccupiedP1: boolean = false, isOccupiedP2: boolean = false) {
+    constructor(id: number) {
         this.id = id
-        this.status = isOccupiedP1 ? STATUS.OCCUPIEDP1 : STATUS.AVAILABLE // need to add OCCUPIEDP2
-        // Need to check status somehow.
+        this.status = STATUS.AVAILABLE
         this.element = document.createElement('div')
         this.element.classList.add('position')
         this.element.classList.add(this.status.toLowerCase())
@@ -40,33 +39,32 @@ class Position {
         if (this.status === STATUS.OCCUPIEDP1 || this.status === STATUS.OCCUPIEDP2) return
         this.element.classList.remove(this.status.toLowerCase())
 
-        //Switch states so when an available space is click the correct color stone is placed
-        if (state.p1 === true) {
-            state.p1 = false
+        //Switch states so when an available space is clicked the correct color stone is placed
+        if (state.p1Turn === true && state.win === false) {
             this.status = STATUS.OCCUPIEDP1
-            message.element.innerHTML = "Player 2's turn"
+            this.element.classList.add(this.status.toLowerCase())
+            message.element.innerText = "Player 2's turn"
+            state.p1Turn = false
+        }
+
+        else if (state.p1Turn === false && state.win == false) {
+            this.status = STATUS.OCCUPIEDP2
+            this.element.classList.add(this.status.toLowerCase())
+            message.element.innerText = "Player 1's turn"
+            state.p1Turn = true
         }
         else {
-            state.p1 = true
-            this.status = STATUS.OCCUPIEDP2
-            message.element.innerHTML = "Player 1's turn"
+            return
         }
-
-        console.log(`P1 state ${state.p1}`)
-        console.log(`Message ${message.text}`)
-
-        //this.status =STATUS.SELECTED
-        this.element.classList.add(this.status.toLowerCase())
-
-    }
-
-    handleReset() {
-        this.status = STATUS.AVAILABLE
-        this.element.classList.add(this.status.toLowerCase())
     }
 
     get isSelected() {
-        return this.status === STATUS.OCCUPIEDP1//STATUS.SELECTED
+        if (state.p1Turn === false) {
+            return this.status === STATUS.OCCUPIEDP1
+        }
+        else {
+            return this.status === STATUS.OCCUPIEDP2
+        }
     }
 }
 
@@ -91,15 +89,18 @@ class Row {
     }
 }
 
-class PositionMap { // See L10 8:30
+class PositionMap {
     rows: Row[]
-    selectedPositions: number[] = []
+    columns: number
+    p1SelectedPositions: number[] = []
+    p2SelectedPositions: number[] = []
     element: HTMLDivElement
 
     constructor(rowNumber: number, positionsPerRow: number) {
         this.rows = Array.from({ length: rowNumber }).map((_, index) => {
             return new Row(index, positionsPerRow)
         })
+        this.columns = positionsPerRow
         this.element = document.createElement('div')
         this.element.classList.add('position-map')
         this.element.append(...this.rows.map((row) => row.element))
@@ -107,26 +108,10 @@ class PositionMap { // See L10 8:30
     }
 
     getSelectedPositionsId() {
-        this.selectedPositions = this.rows.reduce<number[]>((total, row) => {
-            total = [...total, ...row.selectedPositionsId]
-            return total
-        }, [])
-        //this.selectedPositions = this.rows.map(row => row.selectedPositionsId).flat()
-        console.log(`Selected positions: ${this.selectedPositions.join(',')}`)
-    }
-}
-
-class ResetButton {
-    element: HTMLButtonElement
-    text: string = "Reset Game"
-
-    constructor() {
-        this.element = document.createElement('button')
-        this.element.classList.add('buttonReset')
-        this.element.innerHTML = this.text
-        this.element.addEventListener('click', () => {
-            location.reload()
-        })
+        if (state.p1Turn === false)
+            this.p1SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
+        else
+            this.p2SelectedPositions = this.rows.map((row) => row.selectedPositionsId).flat()
     }
 }
 
@@ -137,20 +122,155 @@ class Message {
     constructor() {
         this.element = document.createElement('p')
         this.element.classList.add('message')
+        this.element.setAttribute('id', 'message')
         this.element.innerHTML = this.text
+    }
+}
+
+class ResetButton {
+    element: HTMLButtonElement
+    btnText: string = "Reset Game"
+
+    constructor() {
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonReset')
+        this.element.innerText = this.btnText
+        this.element.addEventListener('click', () => {
+            location.reload()
+        })
+    }
+}
+
+class CheckForWin {
+    p1List: number[]
+    p2List: number[]
+    columns: number = positionMap.columns
+    rows: number = positionMap.rows.length
+
+    constructor() {
+        addEventListener('click', () => this.checkWinDraw())
+    }
+
+    checkWinDraw() {
+        this.p1List = positionMap.p1SelectedPositions
+        this.p2List = positionMap.p2SelectedPositions
+
+        if (state.p1Turn == false)
+            this.checkForFive(this.p1List)
+        else
+            this.checkForFive(this.p2List)
+
+        if (state.win == false && ((this.p1List.length + this.p2List.length) == (this.rows * this.columns))) {
+            state.draw = true
+            message.element.innerText = "Game is a draw, click reset game"
+        }
+    }
+
+    checkForFive(list: number[]) {
+        let desDiagIncrement: number = this.columns + 1
+        let ascDiagIncrement: number = this.columns - 1
+        let verticalIncrement: number = this.columns
+        let horizontalIncrement: number = 1
+
+        list.forEach(element => {
+
+            //Descending diagonal \ code
+            if (list.includes(element + desDiagIncrement) && list.includes(element + 2 * desDiagIncrement) && +
+                list.includes(element + 3 * desDiagIncrement) && list.includes(element + 4 * desDiagIncrement) && +
+                ((element + 4 * desDiagIncrement) % this.columns != 0) && ((element + 3 * desDiagIncrement) % this.columns != 0) && +
+                ((element + 2 * desDiagIncrement) % this.columns != 0) && ((element + 1 * desDiagIncrement) % this.columns != 0)) {
+                state.win = true
+            }
+
+            //Ascending diagonal / code
+            if (list.includes(element - ascDiagIncrement) && list.includes(element - 2 * ascDiagIncrement) && +
+                list.includes(element - 3 * ascDiagIncrement) && list.includes(element - 4 * ascDiagIncrement) && +
+                ((element - 4 * ascDiagIncrement) % this.columns != 0) && ((element - 3 * ascDiagIncrement) % this.columns != 0) && +
+                ((element - 2 * ascDiagIncrement) % this.columns != 0) && ((element - 1 * ascDiagIncrement) % this.columns != 0)) {
+                state.win = true
+            }
+
+            //Vertical | code
+            if (list.includes(element + verticalIncrement) && list.includes(element + 2 * verticalIncrement) && +
+                list.includes(element + 3 * verticalIncrement) && list.includes(element + 4 * verticalIncrement)) {
+                state.win = true
+            }
+
+            //Horizontal - code
+            if (list.includes(element + horizontalIncrement) && list.includes(element + 2 * horizontalIncrement) && +
+                list.includes(element + 3 * horizontalIncrement) && list.includes(element + 4 * horizontalIncrement) && +
+                ((element + 4 * horizontalIncrement) % this.columns != 0) && ((element + 3 * horizontalIncrement) % this.columns != 0) && +
+                ((element + 2 * horizontalIncrement) % this.columns != 0) && ((element + 1 * horizontalIncrement) % this.columns != 0)) {
+                state.win = true
+            }
+        })
+
+        if (state.p1Turn == false && state.win == true)
+            message.element.innerText = "Player 1 Wins!!!!!!!"
+        else if (state.p1Turn == true && state.win == true)
+            message.element.innerText = "Player 2 Wins!!!!!!!"
     }
 
 }
 
+class GameSizeUI {
+    element: HTMLDivElement
+    button: HTMLButtonElement
+
+    constructor() {
+        this.element = document.createElement('div')
+        this.element.classList.add('ui')
 
 
-const positionMap = new PositionMap(15, 15);
+
+        //this.button = document.createElement('button')
+        //this.element.classList.add('sizeButton')
+
+
+
+        //this.element.classList.add('buttonReset')
+
+    }
+}
+
+class BoardSizeButton {
+    element: HTMLButtonElement
+    element2: HTMLDivElement
+    btnText: string = "Change size of board"
+    options: number[]
+
+    constructor() {
+        this.element = document.createElement('button')
+        this.element.classList.add('buttonSize')
+        this.element.innerText = this.btnText
+        this.element.setAttribute('id', 'buttonSize')
+        this.element.addEventListener('click', () => {
+            this.handleClick()
+        })
+        this.element2 = document.createElement('div')
+        this.element2.classList.add('dropdown')
+    }
+
+    handleClick() {
+        this.element2.classList.toggle('show')
+    }
+}
+
+
+const positionMap = new PositionMap(5, 5);
 document.getElementById('game')?.appendChild(positionMap.element)
+
+const checkForWin = new CheckForWin
 
 const message = new Message
 document.getElementById('game')?.appendChild(message.element)
 
 const button = new ResetButton
 document.getElementById('game')?.appendChild(button.element)
+
+const boardSizeButton = new BoardSizeButton
+document.getElementById('game')?.appendChild(boardSizeButton.element)
+document.getElementById('buttonSize')?.appendChild(boardSizeButton.element2)
+//document.getElementById('ui')?.appendChild(button.element)
 
 const state = new State

@@ -123,7 +123,10 @@ body {
   font-size: 20px;
 }
 
-
+.boardlist.show {
+  font-size: 20px;
+  color: black;
+}
 
 .ui {
   display: flex;
